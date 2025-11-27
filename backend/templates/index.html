@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-12">
+    <!-- Hero Section -->
+    <div class="text-center space-y-4">
+        <h1 class="text-5xl md:text-6xl font-bold tracking-tight">
+            Your Personal <span
+                class="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-pink-500">Video Tutor</span>
+        </h1>
+        <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+            Upload any video and let our AI analyze it. Ask questions, get summaries, and find exactly what you're
+            looking for in seconds.
+        </p>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="max-w-2xl mx-auto">
+        <div
+            class="glass rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-primary-500/10 group">
+            <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-6">
+                <div
+                    class="relative border-2 border-dashed border-gray-600 rounded-xl p-10 text-center hover:border-primary-500 transition-colors cursor-pointer group-hover:bg-white/5">
+                    <input type="file" name="video" id="file"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="video/*" required
+                        onchange="updateFileName(this)">
+                    <div class="space-y-2 pointer-events-none">
+                        <div
+                            class="mx-auto w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                </path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-300 font-medium">Click to upload or drag and drop</p>
+                        <p class="text-sm text-gray-500">MP4, MOV, AVI up to 100MB</p>
+                        <p id="file-name" class="text-sm text-primary-500 font-semibold mt-2 hidden"></p>
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Start Processing
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Video List -->
+    <div class="space-y-6">
+        <h2 class="text-2xl font-bold flex items-center gap-2">
+            <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                </path>
+            </svg>
+            Your Library
+        </h2>
+
+        {% if videos %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for video in videos %}
+            <a href="/video/{{ video.id }}"
+                class="glass rounded-xl overflow-hidden hover:scale-[1.02] transition-all duration-300 group">
+                <div
+                    class="aspect-video bg-gray-900 relative flex items-center justify-center group-hover:bg-gray-800 transition-colors">
+                    <svg class="w-12 h-12 text-gray-600 group-hover:text-primary-500 transition-colors" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+
+                    <!-- Status Badge -->
+                    <div id="status-badge-{{ video.id }}" class="absolute top-3 right-3 px-2 py-1 rounded-md text-xs font-medium backdrop-blur-md border border-white/10
+                        {% if video.status == 'completed' %} bg-green-500/20 text-green-400 border-green-500/20
+                        {% elif video.status == 'processing' %} bg-yellow-500/20 text-yellow-400 border-yellow-500/20 animate-pulse
+                        {% elif video.status == 'failed' %} bg-red-500/20 text-red-400 border-red-500/20
+                        {% else %} bg-gray-500/20 text-gray-400 {% endif %}">
+                        {{ video.status|title }}
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-semibold text-lg truncate group-hover:text-primary-400 transition-colors">{{
+                        video.title }}</h3>
+                    <p class="text-sm text-gray-400 mt-1">{{ video.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 glass rounded-2xl border-dashed border-2 border-gray-700">
+            <p class="text-gray-400">No videos uploaded yet. Start by uploading one above!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function updateFileName(input) {
+        const fileName = input.files[0]?.name;
+        const display = document.getElementById('file-name');
+        if (fileName) {
+            display.textContent = fileName;
+            display.classList.remove('hidden');
+        } else {
+            display.classList.add('hidden');
+        }
+    }
+
+    // Polling for video status
+    function pollVideoStatus() {
+        fetch('/api/videos/status')
+            .then(response => response.json())
+            .then(data => {
+                data.videos.forEach(video => {
+                    const badge = document.getElementById(`status-badge-${video.id}`);
+                    if (badge) {
+                        // Update text
+                        badge.textContent = video.status.charAt(0).toUpperCase() + video.status.slice(1);
+
+                        // Update classes
+                        badge.className = 'absolute top-3 right-3 px-2 py-1 rounded-md text-xs font-medium backdrop-blur-md border border-white/10 transition-all duration-300';
+
+                        if (video.status === 'completed') {
+                            badge.classList.add('bg-green-500/20', 'text-green-400', 'border-green-500/20');
+                        } else if (video.status === 'processing') {
+                            badge.classList.add('bg-yellow-500/20', 'text-yellow-400', 'border-yellow-500/20', 'animate-pulse');
+                        } else if (video.status === 'failed') {
+                            badge.classList.add('bg-red-500/20', 'text-red-400', 'border-red-500/20');
+                        } else {
+                            badge.classList.add('bg-gray-500/20', 'text-gray-400');
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error polling status:', error));
+    }
+
+    // Poll every 3 seconds
+    setInterval(pollVideoStatus, 3000);
+</script>
+{% endblock %}

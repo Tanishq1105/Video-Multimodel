@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-12rem)] flex items-center justify-center">
+    <div class="w-full max-w-md">
+        <div class="glass rounded-2xl p-8 shadow-2xl shadow-primary-500/10">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                    Create Account</h2>
+                <p class="text-gray-400 mt-2">Start your AI-powered learning experience</p>
+            </div>
+
+            <form method="POST" action="/register" class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                    <input type="text" name="username" id="username" required
+                        class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all">
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    <input type="password" name="password" id="password" required
+                        class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all">
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm text-gray-400">
+                Already have an account?
+                <a href="/login" class="text-primary-400 hover:text-primary-300 font-medium transition-colors">Sign
+                    in</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

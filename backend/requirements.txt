@@ -1,0 +1,10 @@
+flask
+sqlmodel
+chromadb
+google-generativeai
+python-dotenv
+pytest
+flask-sqlalchemy
+flask-login
+gunicorn
+boto3

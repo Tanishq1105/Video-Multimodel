@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  video-tutor:
+    build: .
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./instance:/app/instance
+      - ./backend/static/uploads:/app/backend/static/uploads
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - AWS_REGION=${AWS_REGION}
+    restart: unless-stopped

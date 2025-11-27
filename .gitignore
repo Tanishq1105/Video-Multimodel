@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+instance/
+.pytest_cache/
+
+# Mac
+.DS_Store
+
+# Docker
+backend/static/uploads/*
+!backend/static/uploads/.gitkeep

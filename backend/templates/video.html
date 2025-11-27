@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-8rem)]">
+    <!-- Video Column -->
+    <div class="lg:col-span-2 flex flex-col gap-4">
+        <div
+            class="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl shadow-primary-500/20 border border-white/10">
+            <video class="w-full h-full" controls playsinline>
+                <source src="{{ video_url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <div class="glass rounded-xl p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">{{ video.title }}</h1>
+                    <p class="text-gray-400 text-sm mt-1">Uploaded on {{ video.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-medium border border-white/10
+                    {% if video.status == 'completed' %} bg-green-500/20 text-green-400 border-green-500/20
+                    {% elif video.status == 'processing' %} bg-yellow-500/20 text-yellow-400 border-yellow-500/20 animate-pulse
+                    {% else %} bg-gray-500/20 text-gray-400 {% endif %}">
+                    {{ video.status|title }}
+                </span>
+            </div>
+
+            {% if video.transcript %}
+            <div class="mt-6">
+                <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Transcript Summary</h3>
+                <div
+                    class="bg-black/30 rounded-lg p-4 max-h-40 overflow-y-auto text-sm text-gray-400 leading-relaxed scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                    {{ video.transcript }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chat Column -->
+    <div class="lg:col-span-1 flex flex-col h-full glass rounded-2xl overflow-hidden border border-white/10">
+        <div class="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md">
+            <h2 class="font-semibold text-lg flex items-center gap-2">
+                <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                    </path>
+                </svg>
+                AI Tutor Chat
+            </h2>
+        </div>
+
+        <div id="chatHistory"
+            class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+            {% if video.chats.count() > 0 %}
+            {% for chat in video.chats %}
+            <div class="flex gap-3 {{ 'flex-row-reverse' if chat.sender == 'user' else '' }}">
+                <div
+                    class="w-8 h-8 rounded-lg {{ 'bg-gray-700' if chat.sender == 'user' else 'bg-gradient-to-br from-primary-500 to-pink-500' }} flex-shrink-0 flex items-center justify-center">
+                    <svg class="w-5 h-5 {{ 'text-gray-300' if chat.sender == 'user' else 'text-white' }}" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        {% if chat.sender == 'user' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        {% else %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                        {% endif %}
+                    </svg>
+                </div>
+                <div
+                    class="{{ 'bg-primary-600 text-white rounded-tr-none' if chat.sender == 'user' else 'bg-gray-800/80 text-gray-200 rounded-tl-none' }} p-3 rounded-2xl text-sm leading-relaxed shadow-sm max-w-[85%] prose prose-invert prose-sm">
+                    {{ chat.text | safe }}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <!-- Welcome Message -->
+            <div class="flex gap-3">
+                <div
+                    class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-pink-500 flex-shrink-0 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </div>
+                <div
+                    class="bg-gray-800/80 text-gray-200 p-3 rounded-2xl rounded-tl-none text-sm leading-relaxed shadow-sm max-w-[85%]">
+                    Hello! I've analyzed this video. Ask me anything about it!
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="p-4 bg-white/5 border-t border-white/10">
+            <form id="chatForm" class="relative">
+                <input type="text" id="questionInput"
+                    class="w-full bg-black/30 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                    placeholder="Ask a question..." required>
+                <button type="submit"
+                    class="absolute right-2 top-2 p-1.5 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Markdown Support -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    const videoPlayer = document.getElementById('videoPlayer');
+    const chatHistory = document.getElementById('chatHistory');
+    const chatForm = document.getElementById('chatForm');
+    const questionInput = document.getElementById('questionInput');
+
+    function appendMessage(text, isUser) {
+        const div = document.createElement('div');
+        div.className = `flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+
+        const avatar = isUser
+            ? `<div class="w-8 h-8 rounded-lg bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                 <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+               </div>`
+            : `<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-pink-500 flex-shrink-0 flex items-center justify-center">
+                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+               </div>`;
+
+        const bubbleClass = isUser
+            ? 'bg-primary-600 text-white rounded-tr-none'
+            : 'bg-gray-800/80 text-gray-200 rounded-tl-none';
+
+        // Parse Markdown for AI responses
+        const content = isUser ? text : marked.parse(text);
+
+        div.innerHTML = `
+            ${avatar}
+            <div class="${bubbleClass} p-3 rounded-2xl text-sm leading-relaxed shadow-sm max-w-[85%] prose prose-invert prose-sm">
+                ${content}
+            </div>
+        `;
+
+        chatHistory.appendChild(div);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function seekVideo(seconds) {
+        videoPlayer.currentTime = seconds;
+        videoPlayer.play();
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const question = questionInput.value.trim();
+        if (!question) return;
+
+        // Add user message
+        appendMessage(question, true);
+        questionInput.value = '';
+        questionInput.disabled = true;
+
+        // Add loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'loading-indicator';
+        loadingDiv.className = 'flex gap-3';
+        loadingDiv.innerHTML = `
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-pink-500 flex-shrink-0 flex items-center justify-center">
+                 <svg class="w-5 h-5 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </div>
+            <div class="bg-gray-800/80 text-gray-400 p-3 rounded-2xl rounded-tl-none text-sm flex items-center gap-2">
+                Thinking...
+            </div>
+        `;
+        chatHistory.appendChild(loadingDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        try {
+            const response = await fetch(`/video/{{ video.id }}/qa`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question }),
+            });
+
+            const data = await response.json();
+
+            // Remove loading indicator
+            document.getElementById('loading-indicator').remove();
+
+            if (data.error) {
+                appendMessage(`Error: ${data.error}`, false);
+            } else {
+                appendMessage(data.text, false);
+
+                // Add timestamp buttons if available
+                if (data.timestamps && data.timestamps.length > 0) {
+                    const tsDiv = document.createElement('div');
+                    tsDiv.className = 'flex gap-2 ml-11 flex-wrap';
+                    data.timestamps.forEach(ts => {
+                        const btn = document.createElement('button');
+                        btn.className = 'text-xs bg-gray-700 hover:bg-gray-600 text-primary-300 px-2 py-1 rounded transition-colors border border-gray-600';
+                        btn.textContent = `Jump to ${ts.toFixed(0)}s`;
+                        btn.onclick = () => seekVideo(ts);
+                        tsDiv.appendChild(btn);
+                    });
+                    chatHistory.appendChild(tsDiv);
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }
+            }
+        } catch (error) {
+            document.getElementById('loading-indicator').remove();
+            appendMessage('Sorry, something went wrong.', false);
+        } finally {
+            questionInput.disabled = false;
+            questionInput.focus();
+        }
+    });
+</script>
+{% endblock %}
