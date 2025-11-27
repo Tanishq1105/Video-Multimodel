@@ -24,6 +24,8 @@ def load_user(user_id):
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Ensure instance directory exists
+os.makedirs(app.instance_path, exist_ok=True)
 
 # Create DB Tables
 with app.app_context():
